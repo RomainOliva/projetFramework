@@ -1,0 +1,24 @@
+{
+    "name": "romain/lpdim",
+    "description": "Another PHP framework",
+    "type": "library",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Romain Oliva",
+            "email": "olivar.info@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "": "tests/"
+        }
+    },
+    "minimum-stability": "alpha",
+    "require": {}
+}
