@@ -4,6 +4,42 @@ use Framework\Http\Request;
 class RequestTest extends \PHPUnit_Framework_TestCase
 {
     /**
+     * @expectedException \InvalidArgumentException
+     * @dataProvider provideInvalidHttpSchemeVersion
+     */
+    public function testUnsupportedHttpSchemeVersion($version)
+    {
+        new Request('GET', '/', 'HTTP', $version);
+    }
+    public function provideInvalidHttpSchemeVersion()
+    {
+        return [
+            [ '0.1' ],
+            [ '0.5' ],
+            [ '1.2' ],
+            [ '1.5' ],
+            [ '2.1' ],
+        ];
+    }
+    /**
+     * @dataProvider provideValidHttpSchemeVersion
+     */
+    public function testSupportedHttpSchemeVersion($version)
+    {
+        new Request('GET', '/', 'HTTP', $version);
+    }
+    public function provideValidHttpSchemeVersion()
+    {
+        return [
+            [ Request::VERSION_1_0 ],
+            [ Request::VERSION_1_1 ],
+            [ Request::VERSION_2_0 ],
+        ];
+    }
+
+
+
+    /**
      * @dataProvider provideValidHttpScheme
      */
     public function testSupportedHttpScheme($scheme)
@@ -33,6 +69,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             [ 'SSH' ],
         ];
     }
+
+
     /**
      * @expectedException \InvalidArgumentException
      * @dataProvider provideInvalidHttpMethod
@@ -51,6 +89,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             [ 'TOTO' ],
         ];
     }
+
+
+
     /**
      * @dataProvider provideRequestParameters
      */

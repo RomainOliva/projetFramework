@@ -13,12 +13,18 @@ class Request
     const DELETE = 'DELETE';
     const HTTP = 'HTTP';
     const HTTPS = 'HTTPS';
+
+    const VERSION_1_0 = '1.0';
+    const VERSION_1_1 = '1.1';
+    const VERSION_2_0 = '2.0';
+
     private $method;
     private $scheme;
     private $schemeVersion;
     private $path;
     private $headers;
     private $body;
+
     /**
      * Constructor.
      *
@@ -34,10 +40,11 @@ class Request
         $this->setMethod($method);
         $this->path = $path;
         $this->setScheme($scheme);
-        $this->schemeVersion = $schemeVersion;
+        $this->setSchemeVersion($schemeVersion);
         $this->headers = $headers;
         $this->body = $body;
     }
+
     private function setMethod($method)
     {
         $methods = [
@@ -51,6 +58,7 @@ class Request
             self::HEAD,
             self::DELETE,
         ];
+
         if (!in_array($method, $methods)) {
             throw new \InvalidArgumentException(sprintf(
                 'Method %s is not supported and must be one of %s.',
@@ -60,6 +68,7 @@ class Request
         }
         $this->method = $method;
     }
+
     public function getMethod()
     {
         return $this->method;
@@ -96,17 +105,16 @@ class Request
         }
         $this->scheme = $scheme;
     }
-
     private function setSchemeVersion($version)
     {
-        $versions = [ self::Version_1_0, self::Version_1_1 ];
-        if (!in_array($scheme, $schemes)) {
+        $versions = [ self::VERSION_1_0, self::VERSION_1_1, self::VERSION_2_0 ];
+        if (!in_array($version, $versions)) {
             throw new \InvalidArgumentException(sprintf(
-                'Scheme %s is not supported and must be one of %s.',
-                $scheme,
-                implode(', ', $schemes)
+                'Scheme version %s is not supported and must be one of %s.',
+                $version,
+                implode(', ', $versions)
             ));
         }
-        $this->scheme = $scheme;
+        $this->schemeVersion = $version;
     }
 }
