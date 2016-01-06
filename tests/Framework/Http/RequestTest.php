@@ -1,8 +1,53 @@
 <?php
+
 namespace Tests\Framework\Http;
+
 use Framework\Http\Request;
+
 class RequestTest extends \PHPUnit_Framework_TestCase
 {
+    public function testCreateFromMessage()
+    {
+        $message = <<<MESSAGE
+GET /home HTTP/1.1
+host: http://wikipedia.com
+user-agent: Mozilla/Firefox
+content-type: application/json
+
+{ "foo": "bar" }
+MESSAGE;
+
+        $request = Request::createFromMessage($message);
+
+        $this->assertInstanceOf(Request::class, $request);
+        $this->assertSame($message, $request->getMessage());
+        $this->assertSame($message, (string) $request);
+    }
+
+    public function testGetMessage()
+    {
+        $message = <<<MESSAGE
+GET /home HTTP/1.1
+host: http://wikipedia.com
+user-agent: Mozilla/Firefox
+content-type: application/json
+
+{ "foo": "bar" }
+MESSAGE;
+
+        $body = '{ "foo": "bar" }';
+        $headers = [
+            'Host' => 'http://wikipedia.com',
+            'User-Agent' => 'Mozilla/Firefox',
+            'Content-Type' => 'application/json',
+        ];
+
+        $request = new Request('GET', '/home', 'HTTP', '1.1', $headers, $body);
+
+        $this->assertSame($message, $request->getMessage());
+        $this->assertSame($message, (string) $request);
+    }
+
     /**
      * @expectedException \RuntimeException
      */
@@ -16,7 +61,6 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         new Request('GET', '/', 'HTTP', '1.1', $headers);
     }
 
-
     /**
      * @expectedException \InvalidArgumentException
      * @dataProvider provideInvalidHttpSchemeVersion
@@ -25,6 +69,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     {
         new Request('GET', '/', 'HTTP', $version);
     }
+
     public function provideInvalidHttpSchemeVersion()
     {
         return [
@@ -35,6 +80,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             [ '2.1' ],
         ];
     }
+
     /**
      * @dataProvider provideValidHttpSchemeVersion
      */
@@ -42,6 +88,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     {
         new Request('GET', '/', 'HTTP', $version);
     }
+
     public function provideValidHttpSchemeVersion()
     {
         return [
@@ -51,8 +98,6 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-
-
     /**
      * @dataProvider provideValidHttpScheme
      */
@@ -60,6 +105,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     {
         new Request('GET', '/', $scheme, '1.1');
     }
+
     public function provideValidHttpScheme()
     {
         return [
@@ -67,6 +113,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             [ Request::HTTPS ],
         ];
     }
+
     /**
      * @expectedException \InvalidArgumentException
      * @dataProvider provideInvalidHttpScheme
@@ -75,6 +122,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     {
         new Request('GET', '/', $scheme, '1.1');
     }
+
     public function provideInvalidHttpScheme()
     {
         return [
@@ -84,7 +132,6 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-
     /**
      * @expectedException \InvalidArgumentException
      * @dataProvider provideInvalidHttpMethod
@@ -93,6 +140,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     {
         new Request($method, '/', 'HTTP', '1.1');
     }
+
     public function provideInvalidHttpMethod()
     {
         return [
@@ -104,30 +152,42 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-
-
     /**
      * @dataProvider provideRequestParameters
      */
     public function testCreateRequestInstance($method, $path)
     {
-        $request = new Request($method, $path, Request::HTTP, '1.1', [
+        $body = '{ "foo": "bar" }';
+        $headers = [
             'Host' => 'http://wikipedia.com',
-            'User-Agent' => 'Mozilla/Firefox'
-        ]);
+            'User-Agent' => 'Mozilla/Firefox',
+            'Content-Type' => 'application/json',
+        ];
+
+        $request = new Request($method, $path, Request::HTTP, '1.1', $headers, $body);
 
         $this->assertSame($method, $request->getMethod());
         $this->assertSame($path, $request->getPath());
         $this->assertSame(Request::HTTP, $request->getScheme());
         $this->assertSame('1.1', $request->getSchemeVersion());
-        $this->assertCount(2, $request->getHeaders());
+        $this->assertSame($body, $request->getBody());
+
+        $this->assertCount(3, $request->getHeaders());
+
         $this->assertSame(
-            [ 'host' => 'http://wikipedia.com', 'user-agent' => 'Mozilla/Firefox' ],
+            [
+                'host' => 'http://wikipedia.com',
+                'user-agent' => 'Mozilla/Firefox',
+                'content-type' => 'application/json',
+            ],
             $request->getHeaders()
         );
+
         $this->assertSame('http://wikipedia.com', $request->getHeader('Host'));
-        $this->assertEmpty($request->getBody());
+        $this->assertSame('Mozilla/Firefox', $request->getHeader('User-Agent'));
+        $this->assertSame('application/json', $request->getHeader('Content-Type'));
     }
+
     public function provideRequestParameters()
     {
         return [
