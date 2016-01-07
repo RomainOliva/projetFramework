@@ -1,5 +1,6 @@
 <?php
 
+namespace Framework\Routing;
 
 interface RouterInterface
 {
