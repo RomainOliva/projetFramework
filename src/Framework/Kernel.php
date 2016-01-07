@@ -4,7 +4,6 @@ namespace Framework;
 
 use Framework\Http\Response;
 use Framework\Http\RequestInterface;
-use Framework\Http\ResponseInterface;
 
 class Kernel implements KernelInterface
 {

@@ -93,8 +93,8 @@ class Response extends AbstractMessage implements ResponseInterface, StreamableI
     {
         header($this->createPrologue());
 
-        foreach($this->getHeaders() as $name => $value) {
-            header($name.': '.$value);
+        foreach($this->headers as $header) {
+            header((string) $header);
         }
 
         echo $this->getBody();

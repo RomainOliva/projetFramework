@@ -6,6 +6,12 @@ abstract class AbstractMessage implements MessageInterface
 {
     protected $scheme;
     protected $schemeVersion;
+
+    /**
+     * A collection of Header instances.
+     *
+     * @var Header[]
+     */
     protected $headers;
     protected $body;
 
@@ -30,7 +36,11 @@ abstract class AbstractMessage implements MessageInterface
 
     public function getHeaders()
     {
-        return $this->headers;
+        $headers = [];
+        foreach ($this->headers as $header) {
+            $headers[$header->getName()] = $header->getValue();
+        }
+        return $headers;
     }
 
     public function getBody()
@@ -66,18 +76,37 @@ abstract class AbstractMessage implements MessageInterface
         $this->schemeVersion = $version;
     }
 
+    /**
+     * @param array $headers
+     */
     private function setHeaders(array $headers)
     {
-        foreach ($headers as $header => $value) {
-            $this->addHeader($header, $value);
+        foreach ($headers as $name => $value){
+            $this->addHeader($name, $value);
         }
     }
 
     public function getHeader($name)
     {
-        $name = strtolower($name);
+        if ($header = $this->findHeader($name)) {
+            return $header->getValue();
+        }
+    }
 
-        return isset($this->headers[$name]) ? $this->headers[$name] : null;
+    /**
+     * Returns the corresponding Header instance.
+     *
+     * @param string $name
+     *
+     * @return Header
+     */
+    private function findHeader($name)
+    {
+        foreach ($this->headers as $header) {
+            if($header->match($name)) {
+                return $header;
+            }
+        }
     }
 
     /**
@@ -88,18 +117,16 @@ abstract class AbstractMessage implements MessageInterface
      *
      * @throws \RuntimeException
      */
-    private function addHeader($header, $value)
+    private function addHeader($name, $value)
     {
-        $header = strtolower($header);
-
-        if (isset($this->headers[$header])) {
+        if($this->findHeader($name)) {
             throw new \RuntimeException(sprintf(
                 'Header %s is already defined and cannot be set twice.',
-                $header
+                $name
             ));
         }
 
-        $this->headers[$header] = (string) $value;
+        $this->headers[] = new Header($name, (string) $value);
     }
 
     protected abstract function createPrologue();
@@ -115,8 +142,8 @@ abstract class AbstractMessage implements MessageInterface
 
         if (count($this->headers)) {
             $message.= PHP_EOL;
-            foreach ($this->headers as $header => $value) {
-                $message.= sprintf('%s: %s', $header, $value).PHP_EOL;
+            foreach ($this->headers as $header) {
+                $message.= $header.PHP_EOL;
             }
         }
 
@@ -157,17 +184,25 @@ abstract class AbstractMessage implements MessageInterface
         $i = 0;
         $headers = [];
         while (!empty($lines[$i])) {
-            $line = $lines[$i];
-            $result = preg_match('#^([a-z][a-z0-9-]+)\: (.+)$#i', $line, $header);
-            if (!$result) {
-                throw new MalformedHttpHeaderException(sprintf('Invalid header line at position %u: %s', $i+2, $line));
-            }
-            list(, $name, $value) = $header;
-
-            $headers[$name] = $value;
+            $headers = array_merge($headers, static::parseHeader($lines[$i], $i));
             $i++;
         }
 
         return $headers;
+    }
+
+    private static function parseHeader($line, $position)
+    {
+        try {
+            $header = Header::createFromString($line);
+        } catch (MalformedHttpHeaderException $e) {
+            throw new MalformedHttpHeaderException(
+                sprintf('Invalid header line at position %u: %s', $position+2, $line),
+                0,
+                $e
+            );
+        }
+
+        return [ $header->getName() => $header->getValue() ];
     }
 }
