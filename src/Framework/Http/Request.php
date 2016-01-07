@@ -81,7 +81,7 @@ class Request extends AbstractMessage implements RequestInterface
         );
     }
 
-    public static function createFromGobals()
+    public static function createFromGlobals()
     {
         $protocol = explode('/', $_SERVER['SERVER_PROTOCOL']);
         $path = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '/';
