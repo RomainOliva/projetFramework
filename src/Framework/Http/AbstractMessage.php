@@ -135,7 +135,7 @@ abstract class AbstractMessage implements MessageInterface
      *
      * @return string
      */
-    public function __toString()   
+    public function __toString()
     {
         return $this->getMessage();
     }
