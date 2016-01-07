@@ -33,6 +33,11 @@ class Header
         return new self($name, $value);
     }
 
+    public function toArray()
+    {
+        return [ $this->name => $this->value ];
+    }
+
     public function match($name)
     {
         return strtolower($name) === $this->name;
