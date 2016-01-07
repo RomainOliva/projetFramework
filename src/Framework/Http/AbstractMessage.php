@@ -38,7 +38,7 @@ abstract class AbstractMessage implements MessageInterface
     {
         $headers = [];
         foreach ($this->headers as $header) {
-            $headers[$header->getName()] = $header->getValue();
+            $headers = array_merge($headers, $header->toArray());
         }
         return $headers;
     }
@@ -194,7 +194,7 @@ abstract class AbstractMessage implements MessageInterface
     private static function parseHeader($line, $position)
     {
         try {
-            $header = Header::createFromString($line);
+           return Header::createFromString($line)->toArray();
         } catch (MalformedHttpHeaderException $e) {
             throw new MalformedHttpHeaderException(
                 sprintf('Invalid header line at position %u: %s', $position+2, $line),
@@ -202,7 +202,5 @@ abstract class AbstractMessage implements MessageInterface
                 $e
             );
         }
-
-        return [ $header->getName() => $header->getValue() ];
     }
 }
