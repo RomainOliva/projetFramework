@@ -19,9 +19,9 @@ class RouteCollectionTest extends \PHPUnit_Framework_TestCase
         $routes->add('hello', $map['hello']);
 
         $current = [];
-       foreach($routes as $name => $route) {
-           $current[$name] = $route;
-       }
+        foreach ($routes as $name => $route) {
+            $current[$name] = $route;
+        }
 
         $this->assertSame($map, $current);
     }
@@ -36,6 +36,5 @@ class RouteCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(3, $routes->count());
         $this->assertSame(3, count($routes));
         $this->assertCount(3, $routes);
-
     }
 }

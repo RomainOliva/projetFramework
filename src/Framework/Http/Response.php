@@ -34,6 +34,11 @@ class Response extends AbstractMessage implements ResponseInterface, StreamableI
         $this->setStatusCode($statusCode);
     }
 
+    public static function createFromRequest(MessageInterface $request, $content, $statusCode, $headers = [])
+    {
+        return new self($statusCode, $request->getScheme(), $request->getSchemeVersion(), $headers, $content);
+    }
+
     public function getStatusCode()
     {
         return $this->statusCode;
@@ -92,8 +97,7 @@ class Response extends AbstractMessage implements ResponseInterface, StreamableI
     public function send()
     {
         header($this->createPrologue());
-
-        foreach($this->headers as $header) {
+        foreach ($this->headers as $header) {
             header((string) $header);
         }
 
